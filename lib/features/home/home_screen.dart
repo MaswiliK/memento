@@ -1,77 +1,58 @@
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_spacing.dart';
+import '../../core/constants/app_strings.dart';
 import '../../core/services/storage_service.dart';
+import '../../shared/widgets/note_card.dart';
+import '../../shared/widgets/primary_button.dart';
 import '../editor/editor_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  String note = "";
-
-  @override
-  void initState() {
-    super.initState();
-    loadNote();
-  }
-
-  void loadNote() {
-    note = StorageService.getNote();
-  }
-
-  Future<void> openEditor() async {
-    final updated = await Navigator.push(
+  Future<void> _openEditor(BuildContext context) async {
+    await Navigator.push(
       context,
-
       MaterialPageRoute(builder: (_) => const EditorScreen()),
     );
-
-    if (updated == true) {
-      setState(() {
-        loadNote();
-      });
-    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Memento")),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.lg),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(AppStrings.appName, style: theme.textTheme.headlineLarge),
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+              const SizedBox(height: AppSpacing.sm),
 
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+              Text(AppStrings.subtitle, style: theme.textTheme.bodyMedium),
 
-          children: [
-            const Text(
-              "Your Note",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+              const SizedBox(height: AppSpacing.xl),
 
-            const SizedBox(height: 16),
-
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20),
+              Expanded(
+                child: ValueListenableBuilder<String>(
+                  valueListenable: StorageService.noteNotifier,
+                  builder: (context, note, _) {
+                    return NoteCard(note: note);
+                  },
+                ),
               ),
-              child: Container(
-                width: double.infinity,
-                constraints: const BoxConstraints(minHeight: 180),
-                padding: const EdgeInsets.all(20),
-                child: Text(note.isEmpty ? "Nothing here yet..." : note),
+
+              const SizedBox(height: AppSpacing.lg),
+
+              PrimaryButton(
+                text: AppStrings.edit,
+                onPressed: () => _openEditor(context),
               ),
-            ),
-
-            const Spacer(),
-
-            FilledButton(onPressed: openEditor, child: const Text("Edit Note")),
-          ],
+            ],
+          ),
         ),
       ),
     );
