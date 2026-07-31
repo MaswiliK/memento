@@ -1,3 +1,4 @@
+// lib/main.dart
 import 'package:flutter/material.dart';
 
 import 'app/app.dart';
@@ -14,8 +15,11 @@ Future<void> main() async {
 
 /// Entry point used by the Android overlay service.
 @pragma("vm:entry-point")
-void overlayMain() {
+Future<void> overlayMain() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Hive in the overlay engine
+  await StorageService.init();
 
   runApp(
     const MaterialApp(debugShowCheckedModeBanner: false, home: OverlayScreen()),
