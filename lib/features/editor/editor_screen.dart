@@ -98,7 +98,7 @@ class _EditorScreenState extends State<EditorScreen> {
                       alignment: Alignment.centerRight,
                       child: ValueListenableBuilder<TextEditingValue>(
                         valueListenable: controller,
-                        builder: (_, value, __) {
+                        builder: (_, value, _) {
                           return AnimatedSwitcher(
                             duration: const Duration(milliseconds: 200),
                             child: Text(

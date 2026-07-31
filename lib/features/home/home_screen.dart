@@ -14,9 +14,9 @@ class HomeScreen extends StatelessWidget {
     await Navigator.push(
       context,
       PageRouteBuilder(
-        pageBuilder: (_, animation, __) => const EditorScreen(),
+        pageBuilder: (_, animation, _) => const EditorScreen(),
 
-        transitionsBuilder: (_, animation, __, child) {
+        transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);
         },
 

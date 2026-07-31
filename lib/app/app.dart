@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 
 import 'theme.dart';
-import '../features/home/home_screen.dart';
+import '../features/splash/splash_screen.dart';
 
 class MementoApp extends StatelessWidget {
   const MementoApp({super.key});
@@ -13,7 +13,7 @@ class MementoApp extends StatelessWidget {
       title: 'Memento',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
-      home: const HomeScreen(),
+      home: const SplashScreen(),
     );
   }
 }
