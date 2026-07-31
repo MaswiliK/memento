@@ -6,6 +6,7 @@ import '../../core/services/storage_service.dart';
 import '../../shared/widgets/note_card.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../editor/editor_screen.dart';
+import '../../core/services/overlay_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -67,6 +68,19 @@ class HomeScreen extends StatelessWidget {
                 PrimaryButton(
                   text: AppStrings.edit,
                   onPressed: () => _openEditor(context),
+                ),
+
+                const SizedBox(height: AppSpacing.md),
+
+                PrimaryButton(
+                  text: "Show Overlay",
+                  onPressed: () async {
+                    final granted = await OverlayService.hasPermission();
+
+                    if (!granted) {
+                      await OverlayService.requestPermission();
+                    }
+                  },
                 ),
               ],
             ),
