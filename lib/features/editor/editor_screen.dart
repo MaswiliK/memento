@@ -1,3 +1,5 @@
+import 'package:flutter/services.dart';
+
 import 'package:flutter/material.dart';
 
 import '../../core/constants/app_spacing.dart';
@@ -28,7 +30,15 @@ class _EditorScreenState extends State<EditorScreen> {
   }
 
   Future<void> save() async {
-    await StorageService.saveNote(controller.text.trim());
+    final text = controller.text.trim();
+
+    if (text == StorageService.getNote()) {
+      if (mounted) Navigator.pop(context);
+      return;
+    }
+
+    await StorageService.saveNote(text);
+    await HapticFeedback.lightImpact();
 
     if (!mounted) return;
 

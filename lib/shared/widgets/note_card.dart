@@ -1,6 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
-import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_strings.dart';
@@ -22,56 +23,65 @@ class NoteCard extends StatelessWidget {
       builder: (_, scale, child) {
         return Transform.scale(scale: scale, child: child);
       },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeInOut,
-        width: double.infinity,
-        padding: const EdgeInsets.all(AppSpacing.xl),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOut,
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.xl),
 
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppRadius.lg),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.08),
 
-          border: Border.all(color: AppColors.border, width: 1),
+              borderRadius: BorderRadius.circular(AppRadius.lg),
 
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.18),
-              blurRadius: 24,
-              spreadRadius: 0,
-              offset: const Offset(0, 12),
-            ),
-          ],
-        ),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.15),
+                width: 1.2,
+              ),
 
-        child: Center(
-          child: AnimatedSwitcher(
-            duration: const Duration(milliseconds: 300),
-            switchInCurve: Curves.easeOut,
-            switchOutCurve: Curves.easeIn,
-
-            transitionBuilder: (child, animation) {
-              return FadeTransition(
-                opacity: animation,
-                child: ScaleTransition(
-                  scale: Tween<double>(
-                    begin: 0.96,
-                    end: 1.0,
-                  ).animate(animation),
-                  child: child,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 28,
+                  offset: const Offset(0, 14),
                 ),
-              );
-            },
+              ],
+            ),
 
-            child: Text(
-              isEmpty ? AppStrings.emptyState : note,
-              key: ValueKey(note),
-              textAlign: isEmpty ? TextAlign.center : TextAlign.start,
-              style: isEmpty
-                  ? theme.textTheme.bodyMedium
-                  : theme.textTheme.bodyLarge?.copyWith(
-                      fontWeight: FontWeight.w500,
+            child: Center(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+
+                transitionBuilder: (child, animation) {
+                  return FadeTransition(
+                    opacity: animation,
+                    child: ScaleTransition(
+                      scale: Tween<double>(
+                        begin: 0.96,
+                        end: 1.0,
+                      ).animate(animation),
+                      child: child,
                     ),
+                  );
+                },
+
+                child: Text(
+                  isEmpty ? AppStrings.emptyState : note,
+                  key: ValueKey(note),
+                  textAlign: isEmpty ? TextAlign.center : TextAlign.start,
+                  style: isEmpty
+                      ? theme.textTheme.bodyMedium
+                      : theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                ),
+              ),
             ),
           ),
         ),

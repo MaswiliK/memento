@@ -30,36 +30,46 @@ class HomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(AppStrings.appName, style: theme.textTheme.headlineLarge),
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF0D1117), Color(0xFF111827), Color(0xFF161B22)],
+          ),
+        ),
 
-              const SizedBox(height: AppSpacing.sm),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(AppStrings.appName, style: theme.textTheme.headlineLarge),
 
-              Text(AppStrings.subtitle, style: theme.textTheme.bodyMedium),
+                const SizedBox(height: AppSpacing.sm),
 
-              const SizedBox(height: AppSpacing.xl),
+                Text(AppStrings.subtitle, style: theme.textTheme.bodyMedium),
 
-              Expanded(
-                child: ValueListenableBuilder<String>(
-                  valueListenable: StorageService.noteNotifier,
-                  builder: (context, note, _) {
-                    return NoteCard(note: note);
-                  },
+                const SizedBox(height: AppSpacing.xl),
+
+                Expanded(
+                  child: ValueListenableBuilder<String>(
+                    valueListenable: StorageService.noteNotifier,
+                    builder: (context, note, _) {
+                      return NoteCard(note: note);
+                    },
+                  ),
                 ),
-              ),
 
-              const SizedBox(height: AppSpacing.lg),
+                const SizedBox(height: AppSpacing.lg),
 
-              PrimaryButton(
-                text: AppStrings.edit,
-                onPressed: () => _openEditor(context),
-              ),
-            ],
+                PrimaryButton(
+                  text: AppStrings.edit,
+                  onPressed: () => _openEditor(context),
+                ),
+              ],
+            ),
           ),
         ),
       ),
