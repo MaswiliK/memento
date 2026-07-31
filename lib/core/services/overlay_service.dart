@@ -8,8 +8,25 @@ class OverlayService {
   }
 
   static Future<bool> requestPermission() async {
-    final bool? granted = await FlutterOverlayWindow.requestPermission();
+    final granted = await FlutterOverlayWindow.requestPermission();
 
     return granted ?? false;
+  }
+
+  static Future<void> show() async {
+    await FlutterOverlayWindow.showOverlay(
+      height: 80,
+      width: 80,
+      enableDrag: true,
+      overlayTitle: "Memento",
+      overlayContent: "Floating Bubble",
+      flag: OverlayFlag.defaultFlag,
+      visibility: NotificationVisibility.visibilityPublic,
+      positionGravity: PositionGravity.auto,
+    );
+  }
+
+  static Future<void> close() async {
+    await FlutterOverlayWindow.closeOverlay();
   }
 }

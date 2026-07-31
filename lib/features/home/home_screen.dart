@@ -75,10 +75,14 @@ class HomeScreen extends StatelessWidget {
                 PrimaryButton(
                   text: "Show Overlay",
                   onPressed: () async {
-                    final granted = await OverlayService.hasPermission();
+                    bool granted = await OverlayService.hasPermission();
 
                     if (!granted) {
-                      await OverlayService.requestPermission();
+                      granted = await OverlayService.requestPermission();
+                    }
+
+                    if (granted) {
+                      await OverlayService.show();
                     }
                   },
                 ),
