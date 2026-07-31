@@ -1,7 +1,9 @@
-// lib/features/editor/editor_screen.dart
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_spacing.dart';
+import '../../core/constants/app_strings.dart';
 import '../../core/services/storage_service.dart';
+import '../../shared/widgets/primary_button.dart';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({super.key});
@@ -16,7 +18,6 @@ class _EditorScreenState extends State<EditorScreen> {
   @override
   void initState() {
     super.initState();
-
     controller = TextEditingController(text: StorageService.getNote());
   }
 
@@ -31,42 +32,86 @@ class _EditorScreenState extends State<EditorScreen> {
 
     if (!mounted) return;
 
-    Navigator.pop(context, true);
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
-      appBar: AppBar(title: const Text("Edit Note")),
+      resizeToAvoidBottomInset: true,
 
-      body: Padding(
-        padding: const EdgeInsets.all(20),
+      appBar: AppBar(title: const Text(AppStrings.editTitle)),
 
-        child: Column(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
+      body: SafeArea(
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.lg,
+            AppSpacing.lg,
+          ),
 
-                autofocus: true,
-
-                maxLines: null,
-
-                expands: true,
-
-                textAlignVertical: TextAlignVertical.top,
-
-                decoration: const InputDecoration(
-                  hintText: "Write something worth remembering...",
-                  border: OutlineInputBorder(),
+          child: Column(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  expands: true,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: theme.textTheme.bodyLarge,
+                  decoration: InputDecoration(
+                    hintText: AppStrings.hint,
+                    hintStyle: theme.textTheme.bodyMedium,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
                 ),
               ),
-            ),
 
-            const SizedBox(height: 20),
+              SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const SizedBox(height: AppSpacing.md),
 
-            FilledButton(onPressed: save, child: const Text("Save")),
-          ],
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: ValueListenableBuilder<TextEditingValue>(
+                        valueListenable: controller,
+                        builder: (_, value, __) {
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: Text(
+                              "${value.text.length} characters",
+                              key: ValueKey(value.text.length),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontSize: 13,
+                                color: Colors.white54,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+
+                    const SizedBox(height: AppSpacing.lg),
+
+                    PrimaryButton(text: AppStrings.save, onPressed: save),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

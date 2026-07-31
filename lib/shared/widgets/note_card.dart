@@ -1,6 +1,6 @@
-// lib/shared/widgets/note_card.dart
 import 'package:flutter/material.dart';
 
+import '../../core/constants/app_colors.dart';
 import '../../core/constants/app_radius.dart';
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_strings.dart';
@@ -13,24 +13,66 @@ class NoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final isEmpty = note.trim().isEmpty;
 
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 220),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: AnimatedSwitcher(
+    return TweenAnimationBuilder<double>(
+      duration: const Duration(milliseconds: 500),
+      tween: Tween(begin: 0.96, end: 1.0),
+      curve: Curves.easeOut,
+      builder: (_, scale, child) {
+        return Transform.scale(scale: scale, child: child);
+      },
+      child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
-        child: Text(
-          note.isEmpty ? AppStrings.emptyState : note,
-          key: ValueKey(note),
-          textAlign: note.isEmpty ? TextAlign.center : TextAlign.start,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w500,
+        curve: Curves.easeInOut,
+        width: double.infinity,
+        padding: const EdgeInsets.all(AppSpacing.xl),
+
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+
+          border: Border.all(color: AppColors.border, width: 1),
+
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.18),
+              blurRadius: 24,
+              spreadRadius: 0,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        ),
+
+        child: Center(
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            switchInCurve: Curves.easeOut,
+            switchOutCurve: Curves.easeIn,
+
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(
+                  scale: Tween<double>(
+                    begin: 0.96,
+                    end: 1.0,
+                  ).animate(animation),
+                  child: child,
+                ),
+              );
+            },
+
+            child: Text(
+              isEmpty ? AppStrings.emptyState : note,
+              key: ValueKey(note),
+              textAlign: isEmpty ? TextAlign.center : TextAlign.start,
+              style: isEmpty
+                  ? theme.textTheme.bodyMedium
+                  : theme.textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+            ),
           ),
         ),
       ),

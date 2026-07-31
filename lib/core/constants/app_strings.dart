@@ -12,4 +12,6 @@ class AppStrings {
   static const save = "Save Note";
 
   static const hint = "Write something worth remembering...";
+
+  static const editTitle = "Edit Note";
 }

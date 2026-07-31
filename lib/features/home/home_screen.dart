@@ -13,7 +13,15 @@ class HomeScreen extends StatelessWidget {
   Future<void> _openEditor(BuildContext context) async {
     await Navigator.push(
       context,
-      MaterialPageRoute(builder: (_) => const EditorScreen()),
+      PageRouteBuilder(
+        pageBuilder: (_, animation, __) => const EditorScreen(),
+
+        transitionsBuilder: (_, animation, __, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+
+        transitionDuration: const Duration(milliseconds: 220),
+      ),
     );
   }
 
