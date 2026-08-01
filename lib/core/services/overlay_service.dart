@@ -1,4 +1,3 @@
-// lib/core/services/overlay_service.dart
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 class OverlayService {
@@ -10,7 +9,6 @@ class OverlayService {
 
   static Future<bool> requestPermission() async {
     final granted = await FlutterOverlayWindow.requestPermission();
-
     return granted ?? false;
   }
 
@@ -29,5 +27,9 @@ class OverlayService {
 
   static Future<void> close() async {
     await FlutterOverlayWindow.closeOverlay();
+  }
+
+  static Future<void> sendData(String data) async {
+    await FlutterOverlayWindow.shareData(data);
   }
 }

@@ -2,6 +2,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'overlay_service.dart';
+
 class StorageService {
   static const _boxName = 'memento';
   static const _noteKey = 'note';
@@ -20,7 +22,10 @@ class StorageService {
   static Future<void> saveNote(String note) async {
     await _box.put(_noteKey, note);
 
+    // Update the main app immediately.
     noteNotifier.value = note;
+    // Push the latest note directly to the overlay.
+    await OverlayService.sendData(note);
   }
 
   static String getNote() {
