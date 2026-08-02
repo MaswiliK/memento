@@ -8,6 +8,7 @@ import '../../core/services/storage_service.dart';
 import '../../shared/widgets/overlay_note_card.dart';
 import '../../shared/widgets/overlay_editor_card.dart';
 import '../../core/services/overlay_service.dart';
+import '../../shared/widgets/overlay_bubble.dart';
 
 class OverlayScreen extends StatefulWidget {
   const OverlayScreen({super.key});
@@ -16,14 +17,17 @@ class OverlayScreen extends StatefulWidget {
   State<OverlayScreen> createState() => _OverlayScreenState();
 }
 
+enum OverlayMode { view, editing, bubble }
+
 class _OverlayScreenState extends State<OverlayScreen>
     with WidgetsBindingObserver {
   late final TextEditingController _controller;
   final FocusNode _focusNode = FocusNode();
 
-  StreamSubscription<dynamic>? _overlaySubscription;
-  bool _isEditing = false;
+  OverlayMode _mode = OverlayMode.view;
   bool _editorActionsEnabled = false;
+
+  StreamSubscription<dynamic>? _overlaySubscription;
 
   @override
   void initState() {
@@ -37,7 +41,7 @@ class _OverlayScreenState extends State<OverlayScreen>
     _overlaySubscription = FlutterOverlayWindow.overlayListener.listen((event) {
       if (event is String) {
         StorageService.noteNotifier.value = event;
-        if (!_isEditing) {
+        if (_mode != OverlayMode.editing) {
           _controller.text = event;
         }
       }
@@ -80,7 +84,7 @@ class _OverlayScreenState extends State<OverlayScreen>
       return const SizedBox.shrink();
     }
 
-    if (_isEditing) {
+    if (_mode == OverlayMode.editing) {
       return Material(
         color: Colors.transparent,
         child: OverlayEditorCard(
@@ -92,22 +96,35 @@ class _OverlayScreenState extends State<OverlayScreen>
             await OverlayService.exitEditMode();
             if (!mounted) return;
             setState(() {
-              _isEditing = false;
+              _mode = OverlayMode.view;
               _editorActionsEnabled = false;
             });
           },
           onSave: () async {
             if (!_editorActionsEnabled) return;
             await StorageService.saveNote(_controller.text);
-            await OverlayService.exitEditMode();
             if (!mounted) return;
             setState(() {
-              _isEditing = false;
+              _mode = OverlayMode.view;
               _editorActionsEnabled = false;
             });
           },
           actionsEnabled: _editorActionsEnabled,
         ),
+      );
+    }
+
+    if (_mode == OverlayMode.bubble) {
+      return OverlayBubble(
+        onTap: () async {
+          await OverlayService.restoreFromBubble();
+
+          if (!mounted) return;
+
+          setState(() {
+            _mode = OverlayMode.view;
+          });
+        },
       );
     }
 
@@ -118,7 +135,7 @@ class _OverlayScreenState extends State<OverlayScreen>
         child: ValueListenableBuilder<String>(
           key: const ValueKey('viewer'),
           valueListenable: StorageService.noteNotifier,
-          builder: (_, note, __) {
+          builder: (_, note, _) {
             return GestureDetector(
               onTap: () async {
                 _controller.text = note;
@@ -130,7 +147,7 @@ class _OverlayScreenState extends State<OverlayScreen>
                 await Future.delayed(const Duration(milliseconds: 250));
                 if (!mounted) return;
                 setState(() {
-                  _isEditing = true;
+                  _mode = OverlayMode.editing;
                   _editorActionsEnabled = false;
                 });
 
@@ -140,7 +157,20 @@ class _OverlayScreenState extends State<OverlayScreen>
                   _editorActionsEnabled = true;
                 });
               },
-              child: SizedBox.expand(child: OverlayNoteCard(note: note)),
+              child: SizedBox.expand(
+                child: OverlayNoteCard(
+                  note: note,
+                  onMinimize: () async {
+                    await OverlayService.minimizeToBubble();
+
+                    if (!mounted) return;
+
+                    setState(() {
+                      _mode = OverlayMode.bubble;
+                    });
+                  },
+                ),
+              ),
             );
           },
         ),

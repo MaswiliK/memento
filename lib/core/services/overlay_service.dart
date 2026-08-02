@@ -1,6 +1,5 @@
 // lib/core/services/overlay_service.dart
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-import 'package:flutter/foundation.dart';
 
 class OverlayService {
   OverlayService._();
@@ -10,6 +9,8 @@ class OverlayService {
 
   static const int _editWidth = 340;
   static const int _editHeight = 220;
+
+  static const int _bubbleSize = 64;
 
   static Future<bool> hasPermission() async {
     return await FlutterOverlayWindow.isPermissionGranted();
@@ -62,5 +63,14 @@ class OverlayService {
   /// Sends live data from the main app to the overlay.
   static Future<void> sendData(String data) async {
     await FlutterOverlayWindow.shareData(data);
+    exitEditMode();
+  }
+
+  static Future<void> minimizeToBubble() async {
+    await FlutterOverlayWindow.resizeOverlay(_bubbleSize, _bubbleSize, true);
+  }
+
+  static Future<void> restoreFromBubble() async {
+    await FlutterOverlayWindow.resizeOverlay(_viewWidth, _viewHeight, true);
   }
 }

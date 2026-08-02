@@ -20,10 +20,10 @@ class OverlayEditorCard extends StatelessWidget {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.18)),
         boxShadow: [
           BoxShadow(
@@ -63,7 +63,7 @@ class OverlayEditorCard extends StatelessWidget {
           const SizedBox(height: 4),
 
           SizedBox(
-            height: 36,
+            height: 40,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
