@@ -30,7 +30,7 @@ class OverlayService {
       overlayContent: "Floating Note",
       flag: OverlayFlag.defaultFlag,
       visibility: NotificationVisibility.visibilityPublic,
-      positionGravity: PositionGravity.auto,
+      positionGravity: PositionGravity.none,
     );
   }
 
