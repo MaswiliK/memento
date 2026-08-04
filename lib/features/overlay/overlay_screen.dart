@@ -41,6 +41,7 @@ class _OverlayScreenState extends State<OverlayScreen>
     _overlaySubscription = FlutterOverlayWindow.overlayListener.listen((event) {
       if (event is String) {
         StorageService.noteNotifier.value = event;
+
         if (_mode != OverlayMode.editing) {
           _controller.text = event;
         }
@@ -50,9 +51,9 @@ class _OverlayScreenState extends State<OverlayScreen>
 
   @override
   void didChangeMetrics() {
-    // Fires whenever the native overlay window's real surface size
-    // arrives (or changes). Rebuild so we can re-check _hasValidViewport.
-    if (mounted) setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -65,55 +66,99 @@ class _OverlayScreenState extends State<OverlayScreen>
     super.dispose();
   }
 
-  /// True only once the native FlutterView has reported a real,
-  /// non-zero physical surface size. On cold start, the Android
-  /// embedding attaches and renders the first several frames with
-  /// physicalSize == Size.zero ("Width is zero. 0,0" in logcat)
-  /// before the true 280x120 (or 340x220) surface is attached.
-  /// Rendering into that zero-sized root clips/hides all content.
   bool _hasValidViewport(BuildContext context) {
     final size = View.of(context).physicalSize;
-    final valid = size.width > 0 && size.height > 0;
-    return valid;
+    return size.width > 0 && size.height > 0;
+  }
+
+  Future<void> _enterEditing(String note) async {
+    _controller.text = note;
+    _controller.selection = TextSelection.collapsed(
+      offset: _controller.text.length,
+    );
+
+    await OverlayService.enterEditMode();
+
+    await Future.delayed(const Duration(milliseconds: 250));
+
+    if (!mounted) return;
+
+    setState(() {
+      _mode = OverlayMode.editing;
+      _editorActionsEnabled = false;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return;
+
+    setState(() {
+      _editorActionsEnabled = true;
+    });
+  }
+
+  Future<void> _minimize() async {
+    await OverlayService.minimizeToBubble();
+
+    if (!mounted) return;
+
+    setState(() {
+      _mode = OverlayMode.bubble;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     if (!_hasValidViewport(context)) {
-      // Don't paint into a degenerate 0x0 root — wait for the real frame.
       return const SizedBox.shrink();
     }
 
+    // ─────────────────────────────────────────────
+    // EDITING MODE
+    // ─────────────────────────────────────────────
     if (_mode == OverlayMode.editing) {
       return Material(
         color: Colors.transparent,
         child: OverlayEditorCard(
           key: const ValueKey('editor'),
           controller: _controller,
+
           onCancel: () async {
             if (!_editorActionsEnabled) return;
+
             _controller.text = StorageService.noteNotifier.value;
+
             await OverlayService.exitEditMode();
+
             if (!mounted) return;
+
             setState(() {
               _mode = OverlayMode.view;
               _editorActionsEnabled = false;
             });
           },
+
           onSave: () async {
             if (!_editorActionsEnabled) return;
+
             await StorageService.saveNote(_controller.text);
+
             if (!mounted) return;
+
             setState(() {
               _mode = OverlayMode.view;
               _editorActionsEnabled = false;
             });
           },
+
           actionsEnabled: _editorActionsEnabled,
         ),
       );
     }
 
+    // ─────────────────────────────────────────────
+    // BUBBLE MODE
+    // ─────────────────────────────────────────────
     if (_mode == OverlayMode.bubble) {
       return OverlayBubble(
         onTap: () async {
@@ -136,40 +181,10 @@ class _OverlayScreenState extends State<OverlayScreen>
           key: const ValueKey('viewer'),
           valueListenable: StorageService.noteNotifier,
           builder: (_, note, _) {
-            return GestureDetector(
-              onTap: () async {
-                _controller.text = note;
-                _controller.selection = TextSelection.collapsed(
-                  offset: _controller.text.length,
-                );
-
-                await OverlayService.enterEditMode();
-                await Future.delayed(const Duration(milliseconds: 250));
-                if (!mounted) return;
-                setState(() {
-                  _mode = OverlayMode.editing;
-                  _editorActionsEnabled = false;
-                });
-
-                await Future.delayed(const Duration(milliseconds: 500));
-                if (!mounted) return;
-                setState(() {
-                  _editorActionsEnabled = true;
-                });
-              },
-              child: SizedBox.expand(
-                child: OverlayNoteCard(
-                  note: note,
-                  onMinimize: () async {
-                    await OverlayService.minimizeToBubble();
-
-                    if (!mounted) return;
-
-                    setState(() {
-                      _mode = OverlayMode.bubble;
-                    });
-                  },
-                ),
+            return SizedBox.expand(
+              child: GestureDetector(
+                onTap: () => _enterEditing(note),
+                child: OverlayNoteCard(note: note, onMinimize: _minimize),
               ),
             );
           },

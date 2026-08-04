@@ -1,4 +1,6 @@
+// lib/features/home/home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_strings.dart';
@@ -7,23 +9,95 @@ import '../../shared/widgets/note_card.dart';
 import '../../shared/widgets/primary_button.dart';
 import '../editor/editor_screen.dart';
 import '../../core/services/overlay_service.dart';
+import '../../shared/widgets/glass_toggle_card.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  bool _overlayVisible = false;
+  bool _isTogglingOverlay = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _syncOverlayState();
+  }
+
+  Future<void> _syncOverlayState() async {
+    final isActive = await FlutterOverlayWindow.isActive();
+
+    if (!mounted) return;
+
+    setState(() {
+      _overlayVisible = isActive;
+    });
+  }
 
   Future<void> _openEditor(BuildContext context) async {
     await Navigator.push(
       context,
       PageRouteBuilder(
         pageBuilder: (_, animation, _) => const EditorScreen(),
-
         transitionsBuilder: (_, animation, _, child) {
           return FadeTransition(opacity: animation, child: child);
         },
-
         transitionDuration: const Duration(milliseconds: 220),
       ),
     );
+  }
+
+  Future<void> _toggleOverlay(bool value) async {
+    if (_isTogglingOverlay) return;
+
+    setState(() {
+      _isTogglingOverlay = true;
+    });
+
+    try {
+      if (value) {
+        bool granted = await OverlayService.hasPermission();
+
+        if (!granted) {
+          granted = await OverlayService.requestPermission();
+        }
+
+        if (!granted) {
+          if (mounted) {
+            setState(() {
+              _overlayVisible = false;
+            });
+          }
+          return;
+        }
+
+        await OverlayService.show();
+
+        if (mounted) {
+          setState(() {
+            _overlayVisible = true;
+          });
+        }
+      } else {
+        await OverlayService.close();
+
+        if (mounted) {
+          setState(() {
+            _overlayVisible = false;
+          });
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isTogglingOverlay = false;
+        });
+      }
+    }
   }
 
   @override
@@ -39,7 +113,6 @@ class HomeScreen extends StatelessWidget {
             colors: [Color(0xFF0D1117), Color(0xFF111827), Color(0xFF161B22)],
           ),
         ),
-
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),
@@ -72,19 +145,14 @@ class HomeScreen extends StatelessWidget {
 
                 const SizedBox(height: AppSpacing.md),
 
-                PrimaryButton(
-                  text: "Show Overlay",
-                  onPressed: () async {
-                    bool granted = await OverlayService.hasPermission();
-
-                    if (!granted) {
-                      granted = await OverlayService.requestPermission();
-                    }
-
-                    if (granted) {
-                      await OverlayService.show();
-                    }
-                  },
+                GlassToggleCard(
+                  title: 'Show Overlay',
+                  subtitle: _overlayVisible
+                      ? 'Memento is floating above your apps'
+                      : 'Memento overlay is hidden',
+                  value: _overlayVisible,
+                  enabled: !_isTogglingOverlay,
+                  onChanged: _toggleOverlay,
                 ),
               ],
             ),

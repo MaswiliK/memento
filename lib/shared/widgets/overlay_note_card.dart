@@ -22,8 +22,6 @@ class OverlayNoteCard extends StatelessWidget {
         color: Colors.transparent,
         child: ClipRRect(
           borderRadius: BorderRadius.circular(24),
-          //child: BackdropFilter(
-          // filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 250),
             curve: Curves.easeOut,
@@ -57,7 +55,7 @@ class OverlayNoteCard extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.only(right: 36),
                     child: Text(
-                      isEmpty ? "Nothing saved yet." : note,
+                      isEmpty ? 'Nothing saved yet.' : note,
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -75,22 +73,21 @@ class OverlayNoteCard extends StatelessWidget {
                   right: -4,
                   child: IconButton(
                     onPressed: onMinimize,
-                    icon: const Icon(
-                      Icons.remove,
-                      color: Colors.white70,
-                      size: 20,
-                    ),
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(
                       minWidth: 32,
                       minHeight: 32,
+                    ),
+                    icon: const Icon(
+                      Icons.remove,
+                      color: Colors.white70,
+                      size: 20,
                     ),
                   ),
                 ),
               ],
             ),
           ),
-          //),
         ),
       ),
     );
