@@ -101,7 +101,7 @@ lib/
 Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/MaswiliK/memento.git
 cd memento
 ```
 
@@ -117,9 +117,11 @@ Run the application:
 flutter run
 ```
 
-## 📦 Release Build
+## 📦 Release
 
-Build a production APK with:
+Memento **v1.0.0** is available as a production APK.
+
+### Build locally
 
 ```bash
 flutter build apk --release
@@ -128,8 +130,10 @@ flutter build apk --release
 The generated APK can be found under:
 
 ```text
-build/app/outputs/flutter-apk/
+build/app/outputs/flutter-apk/app-release.apk
 ```
+
+For ready-to-install releases, visit the repository's **Releases** section.
 
 ## 🔐 Permissions
 
@@ -139,9 +143,9 @@ The permission can be enabled from the application's settings when prompted.
 
 ## 🧪 Current Status
 
-Memento is currently in the **release preparation / stabilization stage**.
+**Memento v1.0.0 — Released**
 
-Core functionality is implemented:
+Core functionality is implemented and the release APK has been successfully built and tested on a physical Android device.
 
 * [x] Main application UI
 * [x] Note creation and editing
@@ -154,7 +158,8 @@ Core functionality is implemented:
 * [x] Bubble restoration
 * [x] Overlay visibility state synchronization
 * [x] App launcher icon
-* [ ] Release testing
+* [x] Release APK
+* [x] Physical device testing
 * [ ] Battery optimization
 * [ ] Performance profiling
 * [ ] Storage usage profiling
@@ -177,9 +182,4 @@ Just one note, always within reach.
 
 This project is currently for personal/development use.
 
-```
-
-I deliberately left **battery optimization, performance profiling, and storage profiling unchecked**. Those are exactly what we're about to validate rather than pretending they're solved.
-
-And I wouldn't add screenshots yet. Once the release APK is built and we're happy with the actual Android experience, **the README can get a proper screenshots/demo section**.
-```
+````
