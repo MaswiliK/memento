@@ -1,4 +1,5 @@
 // lib/core/services/overlay_service.dart
+import 'dart:async';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 class OverlayService {
@@ -38,39 +39,65 @@ class OverlayService {
     await FlutterOverlayWindow.closeOverlay();
   }
 
+  static Future<bool> isActive() async {
+    return await FlutterOverlayWindow.isActive();
+  }
+
   /// Expands the overlay and enables keyboard interaction.
   static Future<void> enterEditMode() async {
     await FlutterOverlayWindow.resizeOverlay(
-      _editWidth.toInt(),
-      _editHeight.toInt(),
-      false, // 🔒 Disable dragging while editing
+      _editWidth,
+      _editHeight,
+      false, // Disable dragging while editing
     );
-
     await FlutterOverlayWindow.updateFlag(OverlayFlag.focusPointer);
   }
 
   /// Restores the normal viewing mode.
   static Future<void> exitEditMode() async {
     await FlutterOverlayWindow.updateFlag(OverlayFlag.defaultFlag);
-
     await FlutterOverlayWindow.resizeOverlay(
-      _viewWidth.toInt(),
-      _viewHeight.toInt(),
-      true, // 🔓 Dragging enabled again
+      _viewWidth,
+      _viewHeight,
+      true, // Dragging enabled again
     );
   }
 
-  /// Sends live data from the main app to the overlay.
+  /// Sends live data from the main app to the overlay window.
   static Future<void> sendData(String data) async {
     await FlutterOverlayWindow.shareData(data);
-    exitEditMode();
   }
 
+  /// Minimizes the overlay to a small floating action bubble.
   static Future<void> minimizeToBubble() async {
     await FlutterOverlayWindow.resizeOverlay(_bubbleSize, _bubbleSize, true);
   }
 
+  /// Restores the overlay to standard dimensions from a bubble state.
   static Future<void> restoreFromBubble() async {
     await FlutterOverlayWindow.resizeOverlay(_viewWidth, _viewHeight, true);
+  }
+
+  /// Listens to data streams sent across the overlay isolates.
+  /// Call this method inside your overlay entrypoint widget state.
+  static StreamSubscription<dynamic> registerOverlayListener(
+    Function(dynamic data) onDataReceived,
+  ) {
+    return FlutterOverlayWindow.overlayListener.listen((dynamic data) {
+      if (data != null) {
+        onDataReceived(data);
+      }
+    });
+  }
+
+  /// Listens to data streams sent from the overlay back to the main application.
+  static StreamSubscription<dynamic> registerMainAppListener(
+    Function(dynamic data) onDataReceived,
+  ) {
+    return FlutterOverlayWindow.overlayListener.listen((dynamic data) {
+      if (data != null) {
+        onDataReceived(data);
+      }
+    });
   }
 }

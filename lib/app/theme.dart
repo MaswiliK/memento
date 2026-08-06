@@ -7,6 +7,41 @@ import '../core/constants/app_colors.dart';
 class AppTheme {
   AppTheme._();
 
+  static final TextTheme _baseTextTheme = const TextTheme(
+    headlineLarge: TextStyle(
+      fontSize: 42,
+      fontWeight: FontWeight.bold,
+      letterSpacing: -1,
+      color: AppColors.textPrimary,
+    ),
+    headlineMedium: TextStyle(
+      fontSize: 34,
+      fontWeight: FontWeight.bold,
+      color: AppColors.textPrimary,
+    ),
+    titleLarge: TextStyle(
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: AppColors.textPrimary,
+    ),
+    bodyLarge: TextStyle(
+      fontSize: 20,
+      height: 1.6,
+      color: AppColors.textPrimary,
+    ),
+    bodyMedium: TextStyle(
+      fontSize: 16,
+      height: 1.5,
+      color: AppColors.textSecondary,
+    ),
+    bodySmall: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+    labelLarge: TextStyle(
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+    ),
+  );
+
   static final ThemeData dark = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
@@ -87,47 +122,14 @@ class AppTheme {
     // ------------------------------------------------
     // TYPOGRAPHY
     // ------------------------------------------------
-    textTheme: GoogleFonts.interTextTheme(
-      const TextTheme(
-        headlineLarge: TextStyle(
-          fontSize: 42,
-          fontWeight: FontWeight.bold,
-          letterSpacing: -1,
-          color: AppColors.textPrimary,
-        ),
-
-        headlineMedium: TextStyle(
-          fontSize: 34,
-          fontWeight: FontWeight.bold,
-          color: AppColors.textPrimary,
-        ),
-
-        titleLarge: TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.w600,
-          color: AppColors.textPrimary,
-        ),
-
-        bodyLarge: TextStyle(
-          fontSize: 20,
-          height: 1.6,
-          color: AppColors.textPrimary,
-        ),
-
-        bodyMedium: TextStyle(
-          fontSize: 16,
-          height: 1.5,
-          color: AppColors.textSecondary,
-        ),
-
-        bodySmall: TextStyle(fontSize: 13, color: AppColors.textSecondary),
-
-        labelLarge: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-      ),
+    textTheme: GoogleFonts.interTextTheme(_baseTextTheme).copyWith(
+      headlineLarge: _baseTextTheme.headlineLarge,
+      headlineMedium: _baseTextTheme.headlineMedium,
+      titleLarge: _baseTextTheme.titleLarge,
+      bodyLarge: _baseTextTheme.bodyLarge,
+      bodyMedium: _baseTextTheme.bodyMedium,
+      bodySmall: _baseTextTheme.bodySmall,
+      labelLarge: _baseTextTheme.labelLarge,
     ),
   );
 }

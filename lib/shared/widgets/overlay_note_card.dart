@@ -15,78 +15,77 @@ class OverlayNoteCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isEmpty = note.trim().isEmpty;
 
-    return SizedBox(
-      width: 280,
-      height: 120,
-      child: Material(
-        color: Colors.transparent,
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(24),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeOut,
-            padding: const EdgeInsets.all(18),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Colors.white.withValues(alpha: 0.18),
-                  Colors.white.withValues(alpha: 0.06),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.25),
-                width: 1.1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.30),
-                  blurRadius: 24,
-                  offset: const Offset(0, 10),
-                ),
+    return Material(
+      color: Colors.transparent,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.white.withValues(alpha: 0.18),
+                Colors.white.withValues(alpha: 0.06),
               ],
             ),
-            child: Stack(
-              children: [
-                Align(
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.25),
+              width: 1.1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.30),
+                blurRadius: 24,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                right:
+                    32, // Prevents text overlapping under the minimize button
+                child: Align(
                   alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 36),
-                    child: Text(
-                      isEmpty ? 'Nothing saved yet.' : note,
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                        height: 1.4,
-                      ),
+                  child: Text(
+                    isEmpty ? 'Nothing saved yet.' : note,
+                    maxLines:
+                        3, // Safe maximum line wrap for 120dp total window height
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isEmpty ? Colors.white60 : Colors.white,
+                      fontSize:
+                          16, // Clean, readable font size for quick glances
+                      fontWeight: FontWeight.w500,
+                      height: 1.3,
                     ),
                   ),
                 ),
+              ),
 
-                Positioned(
-                  top: -4,
-                  right: -4,
-                  child: IconButton(
-                    onPressed: onMinimize,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 32,
-                      minHeight: 32,
-                    ),
-                    icon: const Icon(
-                      Icons.remove,
-                      color: Colors.white70,
-                      size: 20,
-                    ),
+              Positioned(
+                top: -6,
+                right: -6,
+                child: IconButton(
+                  onPressed: onMinimize,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(
+                    minWidth: 32,
+                    minHeight: 32,
+                  ),
+                  icon: const Icon(
+                    Icons.minimize_rounded, // Improved visual visual indicator
+                    color: Colors.white70,
+                    size: 20,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

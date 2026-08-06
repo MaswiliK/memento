@@ -1,7 +1,7 @@
 // lib/shared/widgets/overlay_editor_card.dart
 import 'package:flutter/material.dart';
 
-class OverlayEditorCard extends StatelessWidget {
+class OverlayEditorCard extends StatefulWidget {
   final TextEditingController controller;
   final VoidCallback onSave;
   final VoidCallback onCancel;
@@ -14,6 +14,30 @@ class OverlayEditorCard extends StatelessWidget {
     required this.onCancel,
     required this.actionsEnabled,
   });
+
+  @override
+  State<OverlayEditorCard> createState() => _OverlayEditorCardState();
+}
+
+class _OverlayEditorCardState extends State<OverlayEditorCard> {
+  final FocusNode _textFieldFocusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    // Automatically request soft input keyboard focus as soon as edit mode mounts.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _textFieldFocusNode.requestFocus();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _textFieldFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,45 +61,50 @@ class OverlayEditorCard extends StatelessWidget {
         mainAxisSize: MainAxisSize.max,
         children: [
           Expanded(
-            child: TextField(
-              controller: controller,
-              autofocus: false,
-              expands: true,
-              maxLines: null,
-              minLines: null,
-              textAlignVertical: TextAlignVertical.top,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 15,
-                height: 1.2,
-              ),
-              cursorColor: Colors.white,
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                isDense: true,
-                contentPadding: EdgeInsets.zero,
-                hintText: 'Write something...',
-                hintStyle: TextStyle(color: Colors.white54),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () {
+                if (!_textFieldFocusNode.hasFocus) {
+                  _textFieldFocusNode.requestFocus();
+                }
+              },
+              child: TextField(
+                controller: widget.controller,
+                focusNode: _textFieldFocusNode,
+                autofocus: false,
+                expands: true,
+                maxLines: null,
+                minLines: null,
+                textAlignVertical: TextAlignVertical.top,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  height: 1.2,
+                ),
+                cursorColor: Colors.white,
+                decoration: const InputDecoration(
+                  border: InputBorder.none,
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero,
+                  hintText: 'Write something...',
+                  hintStyle: TextStyle(color: Colors.white54),
+                ),
               ),
             ),
           ),
-
           const SizedBox(height: 4),
-
           SizedBox(
             height: 40,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 TextButton(
-                  onPressed: actionsEnabled ? onCancel : null,
+                  onPressed: widget.actionsEnabled ? widget.onCancel : null,
                   child: const Text('Cancel'),
                 ),
-
                 const SizedBox(width: 4),
-
                 FilledButton(
-                  onPressed: actionsEnabled ? onSave : null,
+                  onPressed: widget.actionsEnabled ? widget.onSave : null,
                   child: const Text('Save'),
                 ),
               ],

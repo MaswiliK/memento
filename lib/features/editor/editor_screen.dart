@@ -1,7 +1,6 @@
+// lib/features/editor/editor_screen.dart
 import 'package:flutter/services.dart';
-
 import 'package:flutter/material.dart';
-
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_strings.dart';
 import '../../core/services/storage_service.dart';
@@ -14,57 +13,70 @@ class EditorScreen extends StatefulWidget {
   State<EditorScreen> createState() => _EditorScreenState();
 }
 
-class _EditorScreenState extends State<EditorScreen> {
+class _EditorScreenState extends State<EditorScreen>
+    with WidgetsBindingObserver {
   late final TextEditingController controller;
 
   @override
   void initState() {
     super.initState();
     controller = TextEditingController(text: StorageService.getNote());
+
+    // Listen for global application state changes (e.g., coming back from background)
+    StorageService.noteNotifier.addListener(_onGlobalNoteChanged);
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    StorageService.noteNotifier.removeListener(_onGlobalNoteChanged);
     controller.dispose();
     super.dispose();
   }
 
+  /// This triggers whenever the app becomes active again, forcing a disk sync
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      final freshNote = StorageService.getNote();
+      if (controller.text != freshNote) {
+        StorageService.noteNotifier.value = freshNote;
+      }
+    }
+  }
+
+  void _onGlobalNoteChanged() {
+    final incomingText = StorageService.noteNotifier.value;
+    if (controller.text != incomingText && mounted) {
+      setState(() {
+        controller.text = incomingText;
+        controller.selection = TextSelection.collapsed(
+          offset: incomingText.length,
+        );
+      });
+    }
+  }
+
   Future<void> save() async {
     final text = controller.text.trim();
-
-    if (text == StorageService.getNote()) {
-      if (mounted) Navigator.pop(context);
-      return;
-    }
-
     await StorageService.saveNote(text);
     await HapticFeedback.lightImpact();
-
     if (!mounted) return;
-
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
       resizeToAvoidBottomInset: true,
-
       appBar: AppBar(title: const Text(AppStrings.editTitle)),
-
       body: SafeArea(
         child: AnimatedPadding(
           duration: const Duration(milliseconds: 250),
           curve: Curves.easeOut,
-          padding: EdgeInsets.fromLTRB(
-            AppSpacing.lg,
-            AppSpacing.lg,
-            AppSpacing.lg,
-            AppSpacing.lg,
-          ),
-
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Column(
             children: [
               Expanded(
@@ -80,46 +92,11 @@ class _EditorScreenState extends State<EditorScreen> {
                     hintText: AppStrings.hint,
                     hintStyle: theme.textTheme.bodyMedium,
                     border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
                     contentPadding: EdgeInsets.zero,
                   ),
                 ),
               ),
-
-              SafeArea(
-                top: false,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: AppSpacing.md),
-
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: ValueListenableBuilder<TextEditingValue>(
-                        valueListenable: controller,
-                        builder: (_, value, _) {
-                          return AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 200),
-                            child: Text(
-                              "${value.text.length} characters",
-                              key: ValueKey(value.text.length),
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                fontSize: 13,
-                                color: Colors.white54,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-
-                    const SizedBox(height: AppSpacing.lg),
-
-                    PrimaryButton(text: AppStrings.save, onPressed: save),
-                  ],
-                ),
-              ),
+              PrimaryButton(text: AppStrings.save, onPressed: save),
             ],
           ),
         ),

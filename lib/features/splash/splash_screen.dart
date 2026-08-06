@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-
+// lib/features/splash/splash_screen.dart
 import 'dart:async';
+import 'package:flutter/material.dart';
 
 import '../home/home_screen.dart';
 
@@ -17,19 +17,18 @@ class _SplashScreenState extends State<SplashScreen>
 
   late final Animation<double> _logoOpacity;
   late final Animation<double> _logoScale;
-
   late final Animation<double> _titleOpacity;
   late final Animation<double> _subtitleOpacity;
 
   bool _fadeOut = false;
-
   static const String _tagline = "Remember what matters.";
-
   String _animatedTagline = "";
-
   bool _showCursor = true;
 
   Timer? _cursorTimer;
+  Timer? _typewriterTimer;
+
+  /// Track and cancel the loop gracefully on dispose
 
   @override
   void initState() {
@@ -62,70 +61,90 @@ class _SplashScreenState extends State<SplashScreen>
       curve: const Interval(0.15, 0.35, curve: Curves.easeOut),
     );
 
-    Future(() async {
-      _controller.forward();
-
-      _startCursorBlink();
-
-      await Future.delayed(const Duration(milliseconds: 300));
-
-      await _typeWriter();
-
-      await Future.delayed(const Duration(milliseconds: 1800));
-
-      if (!mounted) return;
-
-      setState(() {
-        _fadeOut = true;
-      });
-
-      await Future.delayed(const Duration(milliseconds: 100));
-
-      if (!mounted) return;
-
-      _cursorTimer?.cancel();
-
-      Navigator.of(context).pushReplacement(
-        PageRouteBuilder(
-          transitionDuration: const Duration(milliseconds: 350),
-          pageBuilder: (_, _, _) => const HomeScreen(),
-          transitionsBuilder: (_, animation, _, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
-      );
-    });
-  }
-
-  Future<void> _typeWriter() async {
-    for (int i = 1; i <= _tagline.length; i++) {
-      if (!mounted) return;
-
-      setState(() {
-        _animatedTagline = _tagline.substring(0, i);
-      });
-
-      await Future.delayed(const Duration(milliseconds: 35));
-    }
-  }
-
-  void _startCursorBlink() {
-    _cursorTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
-      if (!mounted) return;
-
-      setState(() {
-        _showCursor = !_showCursor;
-      });
-    });
+    /// Post-frame callback ensures layout bounds are ready before animations start
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _startInitializationPipeline(),
+    );
   }
 
   @override
   void dispose() {
     _cursorTimer?.cancel();
-
+    _typewriterTimer
+        ?.cancel(); // Terminate background typography loops instantly
     _controller.dispose();
-
     super.dispose();
+  }
+
+  void _startInitializationPipeline() async {
+    if (!mounted) return;
+    _controller.forward();
+    _startCursorBlink();
+
+    await Future.delayed(const Duration(milliseconds: 300));
+    if (!mounted) return;
+
+    await _runTypewriterEffect();
+
+    await Future.delayed(const Duration(milliseconds: 1800));
+    if (!mounted) return;
+
+    setState(() {
+      _fadeOut = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 100));
+    if (!mounted) return;
+
+    _cursorTimer?.cancel();
+
+    Navigator.of(context).pushReplacement(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 350),
+        pageBuilder: (_, _, _) => const HomeScreen(),
+        transitionsBuilder: (_, animation, _, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+      ),
+    );
+  }
+
+  /// Runs the typewriter animation cleanly without using manual nested awaits
+  Future<void> _runTypewriterEffect() {
+    final completer = Completer<void>();
+    int characterIndex = 1;
+
+    _typewriterTimer = Timer.periodic(const Duration(milliseconds: 35), (
+      timer,
+    ) {
+      if (!mounted) {
+        timer.cancel();
+        completer.complete();
+        return;
+      }
+
+      setState(() {
+        _animatedTagline = _tagline.substring(0, characterIndex);
+      });
+
+      if (characterIndex >= _tagline.length) {
+        timer.cancel();
+        completer.complete();
+      } else {
+        characterIndex++;
+      }
+    });
+
+    return completer.future;
+  }
+
+  void _startCursorBlink() {
+    _cursorTimer = Timer.periodic(const Duration(milliseconds: 500), (_) {
+      if (!mounted) return;
+      setState(() {
+        _showCursor = !_showCursor;
+      });
+    });
   }
 
   @override
@@ -148,16 +167,12 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Image.asset("assets/images/logo.png", width: 130),
                 ),
               ),
-
               const SizedBox(height: 28),
-
               FadeTransition(
                 opacity: _titleOpacity,
                 child: Text("Memento", style: theme.textTheme.headlineLarge),
               ),
-
               const SizedBox(height: 10),
-
               FadeTransition(
                 opacity: _subtitleOpacity,
                 child: Text(

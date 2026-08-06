@@ -1,6 +1,6 @@
 // lib/features/home/home_screen.dart
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 import '../../core/constants/app_spacing.dart';
 import '../../core/constants/app_strings.dart';
@@ -18,23 +18,39 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+/// AppLifecycleListener mixin to capture when the user resumes the application
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   bool _overlayVisible = false;
   bool _isTogglingOverlay = false;
 
   @override
   void initState() {
     super.initState();
-    _syncOverlayState();
+    WidgetsBinding.instance.addObserver(this);
+    _checkAndSyncOverlayState();
   }
 
-  Future<void> _syncOverlayState() async {
-    final isActive = await FlutterOverlayWindow.isActive();
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  ///This lifecycle trigger runs whenever the app comes back to the foreground
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _checkAndSyncOverlayState();
+    }
+  }
+
+  /// Queries the native Android window service to verify if the overlay is actually running
+  Future<void> _checkAndSyncOverlayState() async {
+    final activeOnSystem = await OverlayService.isActive();
 
     if (!mounted) return;
-
     setState(() {
-      _overlayVisible = isActive;
+      _overlayVisible = activeOnSystem;
     });
   }
 
@@ -49,6 +65,10 @@ class _HomeScreenState extends State<HomeScreen> {
         transitionDuration: const Duration(milliseconds: 220),
       ),
     );
+
+    //When returning from the EditorScreen back to the HomeScreen,
+    // force a re-check to make sure the toggle switch state is still accurate.
+    _checkAndSyncOverlayState();
   }
 
   Future<void> _toggleOverlay(bool value) async {
@@ -61,7 +81,6 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       if (value) {
         bool granted = await OverlayService.hasPermission();
-
         if (!granted) {
           granted = await OverlayService.requestPermission();
         }
@@ -76,6 +95,10 @@ class _HomeScreenState extends State<HomeScreen> {
         }
 
         await OverlayService.show();
+        await Future.delayed(const Duration(milliseconds: 600));
+
+        final currentNote = StorageService.getNote();
+        await OverlayService.sendData(currentNote);
 
         if (mounted) {
           setState(() {
@@ -84,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       } else {
         await OverlayService.close();
-
         if (mounted) {
           setState(() {
             _overlayVisible = false;
@@ -120,13 +142,9 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(AppStrings.appName, style: theme.textTheme.headlineLarge),
-
                 const SizedBox(height: AppSpacing.sm),
-
                 Text(AppStrings.subtitle, style: theme.textTheme.bodyMedium),
-
                 const SizedBox(height: AppSpacing.xl),
-
                 Expanded(
                   child: ValueListenableBuilder<String>(
                     valueListenable: StorageService.noteNotifier,
@@ -135,16 +153,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                 ),
-
                 const SizedBox(height: AppSpacing.lg),
-
                 PrimaryButton(
                   text: AppStrings.edit,
                   onPressed: () => _openEditor(context),
                 ),
-
                 const SizedBox(height: AppSpacing.md),
-
                 GlassToggleCard(
                   title: 'Show Overlay',
                   subtitle: _overlayVisible

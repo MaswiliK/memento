@@ -1,5 +1,5 @@
 name: memento
-description: "A minimalist Android application built with Flutter that allows users to create a single note that remains visible on the lock screen."
+description: "A minimalist Android application built with Flutter that allows users to create a single note that remains visible as an overlay on top of other applications. The app is designed to be simple and user-friendly, providing a convenient way for users to jot down important information or reminders without having to switch between apps. The overlay feature ensures that the note is always accessible, making it ideal for quick reference or note-taking while multitasking."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -15,6 +15,8 @@ dependencies:
   hive: ^2.2.3
   hive_flutter: ^1.1.0
   google_fonts: ^6.3.2
+  flutter_overlay_window: ^0.5.0
+  shared_preferences: ^2.5.5
 
 dev_dependencies:
   flutter_test:
@@ -22,8 +24,6 @@ dev_dependencies:
 
   flutter_lints: ^6.0.0
   flutter_native_splash: ^2.4.6
-  flutter_overlay_window: ^0.5.0
-
 flutter:
   uses-material-design: true
 

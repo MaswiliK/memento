@@ -2,7 +2,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 import '../../core/services/storage_service.dart';
 import '../../shared/widgets/overlay_note_card.dart';
@@ -38,7 +37,8 @@ class _OverlayScreenState extends State<OverlayScreen>
       text: StorageService.noteNotifier.value,
     );
 
-    _overlaySubscription = FlutterOverlayWindow.overlayListener.listen((event) {
+    // Encapsulated listener via central service wrapper
+    _overlaySubscription = OverlayService.registerOverlayListener((event) {
       if (event is String) {
         StorageService.noteNotifier.value = event;
 
@@ -61,8 +61,7 @@ class _OverlayScreenState extends State<OverlayScreen>
     WidgetsBinding.instance.removeObserver(this);
     _controller.dispose();
     _focusNode.dispose();
-    _overlaySubscription?.cancel();
-    FlutterOverlayWindow.disposeOverlayListener();
+    _overlaySubscription?.cancel(); // Safely closes the single stream listener
     super.dispose();
   }
 
@@ -141,10 +140,16 @@ class _OverlayScreenState extends State<OverlayScreen>
           onSave: () async {
             if (!_editorActionsEnabled) return;
 
-            await StorageService.saveNote(_controller.text);
+            final updatedText = _controller.text;
+
+            // 1. Instantly exit edit window configurations
+            await OverlayService.exitEditMode();
+            await Future.delayed(const Duration(milliseconds: 100));
+
+            // 2. Commit text safely directly to shared preference disk arrays
+            await StorageService.saveNote(updatedText);
 
             if (!mounted) return;
-
             setState(() {
               _mode = OverlayMode.view;
               _editorActionsEnabled = false;
